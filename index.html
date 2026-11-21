@@ -4,24 +4,25 @@
 <meta charset="UTF-8">
 <title>Mechanical Glass Octopus</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #050508; font-family: system-ui, -apple-system, sans-serif; }
+  body { margin: 0; overflow: hidden; background: #0a0a12; font-family: system-ui, -apple-system, sans-serif; }
   #ui {
-    position: absolute; top: 14px; left: 14px; color: #f0f0ff; z-index: 10;
-    background: rgba(10,10,18,0.82); padding: 14px 16px; border-radius: 12px;
-    backdrop-filter: blur(12px); border: 1px solid rgba(120,150,255,0.2);
-    min-width: 240px;
+    position: absolute; top: 12px; left: 12px; color: #f4f4ff; z-index: 10;
+    background: rgba(12,12,20,0.85); padding: 12px 14px; border-radius: 12px;
+    backdrop-filter: blur(14px); border: 1px solid rgba(140,160,255,0.18);
+    min-width: 230px; font-size: 13px;
   }
-  #ui h1 { margin: 0 0 2px 0; font-size: 15px; font-weight: 650; letter-spacing: -0.2px; }
-  #ui .sub { margin: 0 0 10px 0; font-size: 11px; opacity: 0.65; }
-  .row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  #ui h1 { margin: 0 0 2px; font-size: 14.5px; font-weight: 650; }
+  #ui .sub { margin: 0 0 8px; font-size: 11px; opacity: 0.6; }
+  .btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
   button {
-    background: #2c3dff; color: white; border: none; padding: 6px 11px;
-    border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+    background: #2a3bff; color: #fff; border: none; padding: 5px 10px;
+    border-radius: 6px; cursor: pointer; font-size: 11.5px; font-weight: 600;
   }
-  button:hover { background: #4a5aff; }
-  button.active { background: #ff2d55; }
-  label { font-size: 11px; opacity: 0.8; display: flex; align-items: center; gap: 6px; }
-  input[type="color"] { width: 32px; height: 22px; border: none; background: none; cursor: pointer; padding: 0; }
+  button:hover { background: #4455ff; }
+  button.active { background: #ff3355; }
+  .ctrl { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 11px; }
+  input[type="color"] { width: 34px; height: 20px; border: none; background: none; cursor: pointer; padding: 0; }
+  input[type="checkbox"] { accent-color: #4a5aff; }
   #info { font-size: 10px; margin-top: 6px; color: #777; }
 </style>
 <script type="importmap">
@@ -36,65 +37,72 @@
 <body>
 <div id="ui">
   <h1>Mechanical Glass Octopus</h1>
-  <div class="sub">Hyalos GX-style procedural</div>
-  <div class="row">
+  <div class="sub">procedural Hyalos-style</div>
+  <div class="btns">
     <button id="btnExplode">Explode</button>
-    <button id="btnIris">Open Iris</button>
-    <button id="btnDome">Lift Dome</button>
+    <button id="btnIris">Iris</button>
+    <button id="btnDome">Dome</button>
   </div>
-  <label>Background <input type="color" id="bgColor" value="#050508"></label>
-  <div id="info">Drag to rotate · Scroll to zoom</div>
+  <div class="ctrl">
+    <span>Background</span>
+    <input type="color" id="bgColor" value="#0a0a12">
+  </div>
+  <div class="ctrl">
+    <input type="checkbox" id="showFloor" checked>
+    <span>Show floor</span>
+  </div>
+  <div id="info">Drag rotate · Scroll zoom</div>
 </div>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050508);
-scene.fog = new THREE.FogExp2(0x050508, 0.006);
+scene.background = new THREE.Color(0x0a0a12);
+scene.fog = new THREE.FogExp2(0x0a0a12, 0.0045);
 
-const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 80);
-camera.position.set(7.5, 4.2, 11);
+const camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, 0.1, 60);
+camera.position.set(6.8, 3.6, 9.5);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;
+renderer.toneMappingExposure = 1.3;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.target.set(0, 0.6, 0);
+controls.target.set(0, 0.4, 0);
 
 // Lights
-scene.add(new THREE.AmbientLight(0x1a1a28, 0.35));
-const key = new THREE.DirectionalLight(0xffffff, 1.6);
-key.position.set(5, 12, 7);
+scene.add(new THREE.AmbientLight(0x181824, 0.4));
+const key = new THREE.DirectionalLight(0xffffff, 1.7);
+key.position.set(4, 10, 6);
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x3355aa, 0.45);
-fill.position.set(-6, 2, -5);
+const fill = new THREE.DirectionalLight(0x4466bb, 0.5);
+fill.position.set(-5, 2, -4);
 scene.add(fill);
-const rim = new THREE.PointLight(0x77bbff, 2.4, 18);
-rim.position.set(0, 1.5, -5);
+const rim = new THREE.PointLight(0x88ccff, 2.8, 16);
+rim.position.set(0, 1.2, -4.5);
 scene.add(rim);
-const coreLight = new THREE.PointLight(0x00ff99, 2.2, 6);
-coreLight.position.set(0, 1.7, 0);
+const coreLight = new THREE.PointLight(0x00ffaa, 2.5, 5.5);
+coreLight.position.set(0, 1.55, 0);
 scene.add(coreLight);
 
 // Materials
-const mDark = new THREE.MeshStandardMaterial({ color: 0x15151c, metalness: 0.94, roughness: 0.22 });
-const mMid = new THREE.MeshStandardMaterial({ color: 0x2e2e3a, metalness: 0.9, roughness: 0.28 });
-const mLight = new THREE.MeshStandardMaterial({ color: 0x7a7a96, metalness: 0.87, roughness: 0.2 });
-const mCopper = new THREE.MeshStandardMaterial({ color: 0xb86a32, metalness: 0.82, roughness: 0.32 });
-const mGlass = new THREE.MeshPhysicalMaterial({
-  color: 0xb8d4ff, metalness: 0.02, roughness: 0.015,
-  transmission: 0.95, thickness: 0.35, ior: 1.52,
-  clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.7
+const matDark = new THREE.MeshStandardMaterial({ color: 0x12121a, metalness: 0.95, roughness: 0.18 });
+const matMid = new THREE.MeshStandardMaterial({ color: 0x2a2a36, metalness: 0.92, roughness: 0.25 });
+const matLight = new THREE.MeshStandardMaterial({ color: 0x8a8aaa, metalness: 0.88, roughness: 0.18 });
+const matCopper = new THREE.MeshStandardMaterial({ color: 0xc07030, metalness: 0.85, roughness: 0.3 });
+const matGlass = new THREE.MeshPhysicalMaterial({
+  color: 0xc0d8ff, metalness: 0.01, roughness: 0.01,
+  transmission: 0.96, thickness: 0.4, ior: 1.5,
+  clearcoat: 1, clearcoatRoughness: 0.02, transparent: true, opacity: 0.75
 });
-const mSucker = new THREE.MeshStandardMaterial({ color: 0xd45566, metalness: 0.1, roughness: 0.5 });
-const mGlow = new THREE.MeshStandardMaterial({ color: 0x00ffaa, emissive: 0x00ff88, emissiveIntensity: 1.1 });
+const matSucker = new THREE.MeshStandardMaterial({ color: 0xe05570, metalness: 0.05, roughness: 0.45 });
+const matGlow = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00ffaa, emissiveIntensity: 1.3 });
 
 const root = new THREE.Group();
 scene.add(root);
@@ -103,107 +111,102 @@ scene.add(root);
 const body = new THREE.Group();
 root.add(body);
 
-const mantle = new THREE.Mesh(new THREE.SphereGeometry(1.65, 64, 40, 0, Math.PI*2, 0, Math.PI*0.62), mDark);
-mantle.position.y = 0.45;
-mantle.scale.set(1.08, 1.25, 1.08);
+const mantle = new THREE.Mesh(new THREE.SphereGeometry(1.55, 72, 48, 0, Math.PI*2, 0, Math.PI*0.6), matDark);
+mantle.position.y = 0.35;
+mantle.scale.set(1.1, 1.28, 1.1);
 body.add(mantle);
 
-const midRing = new THREE.Mesh(new THREE.TorusGeometry(1.48, 0.09, 16, 56), mMid);
-midRing.position.y = -0.15;
-midRing.rotation.x = Math.PI/2;
-body.add(midRing);
+const baseRing = new THREE.Mesh(new THREE.TorusGeometry(1.38, 0.08, 16, 60), matMid);
+baseRing.position.y = -0.22;
+baseRing.rotation.x = Math.PI/2;
+body.add(baseRing);
 
-// Teeth
-for (let i = 0; i < 42; i++) {
-  const a = (i / 42) * Math.PI * 2;
-  const t = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.08, 0.1), mCopper);
-  t.position.set(Math.cos(a)*1.58, -0.15, Math.sin(a)*1.58);
-  t.rotation.y = -a;
-  body.add(t);
+for (let i = 0; i < 48; i++) {
+  const a = (i/48)*Math.PI*2;
+  const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.07, 0.09), matCopper);
+  tooth.position.set(Math.cos(a)*1.48, -0.22, Math.sin(a)*1.48);
+  tooth.rotation.y = -a;
+  body.add(tooth);
 }
 
-// Dome
-const dome = new THREE.Mesh(new THREE.SphereGeometry(1.78, 64, 32, 0, Math.PI*2, 0, Math.PI*0.46), mGlass);
-dome.position.y = 1.72;
+const dome = new THREE.Mesh(new THREE.SphereGeometry(1.68, 72, 36, 0, Math.PI*2, 0, Math.PI*0.45), matGlass);
+dome.position.y = 1.58;
 body.add(dome);
 
-// Inner glowing core
-const core = new THREE.Mesh(new THREE.SphereGeometry(0.55, 28, 18), mGlow);
-core.position.y = 1.55;
+const core = new THREE.Mesh(new THREE.SphereGeometry(0.48, 32, 20), matGlow);
+core.position.y = 1.42;
 body.add(core);
 
-// Inner mechanical rings
-for (let i = 0; i < 4; i++) {
-  const r = new THREE.Mesh(new THREE.TorusGeometry(0.75 + i*0.12, 0.022, 8, 36), mLight);
-  r.position.y = 1.4 + i*0.12;
-  r.rotation.x = Math.PI/2;
-  body.add(r);
+for (let i = 0; i < 5; i++) {
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.62 + i*0.1, 0.018, 8, 40), matLight);
+  ring.position.y = 1.28 + i*0.1;
+  ring.rotation.x = Math.PI/2;
+  body.add(ring);
 }
 
 // Eye
 const eye = new THREE.Group();
-eye.position.set(0, 1.75, 1.42);
+eye.position.set(0, 1.62, 1.28);
 body.add(eye);
 
-const eyeFrame = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.055, 12, 28), mLight);
-eye.add(eyeFrame);
+const frame = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.048, 12, 32), matLight);
+eye.add(frame);
 
 const blades = [];
-for (let i = 0; i < 14; i++) {
-  const b = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.038, 0.02), mMid);
-  b.position.x = 0.12;
+for (let i = 0; i < 16; i++) {
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.032, 0.016), matMid);
+  blade.position.x = 0.1;
   const p = new THREE.Group();
-  p.add(b);
-  p.rotation.z = (i/14)*Math.PI*2;
+  p.add(blade);
+  p.rotation.z = (i/16)*Math.PI*2;
   eye.add(p);
   blades.push(p);
 }
 
-const lens = new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 14), new THREE.MeshPhysicalMaterial({
-  color: 0x112244, metalness: 0.5, roughness: 0.08, transmission: 0.5, emissive: 0x001833
+const lens = new THREE.Mesh(new THREE.SphereGeometry(0.15, 28, 16), new THREE.MeshPhysicalMaterial({
+  color: 0x0a1830, metalness: 0.6, roughness: 0.05, transmission: 0.55, emissive: 0x001122
 }));
-lens.position.z = -0.06;
+lens.position.z = -0.05;
 eye.add(lens);
 
-// Arms - more detailed
+// Arms - denser, better taper
 const arms = [];
 for (let i = 0; i < 8; i++) {
   const ag = new THREE.Group();
-  const ang = (i / 8) * Math.PI * 2;
-  ag.position.set(Math.cos(ang)*1.22, -0.05, Math.sin(ang)*1.22);
+  const ang = (i/8)*Math.PI*2;
+  ag.position.set(Math.cos(ang)*1.15, -0.08, Math.sin(ang)*1.15);
   ag.rotation.y = -ang + Math.PI/2;
   ag.userData.ang = ang;
   root.add(ag);
   arms.push(ag);
 
   let prev = ag;
-  const N = 18;
-  for (let s = 0; s < N; s++) {
-    const t = s / N;
-    const len = 0.48 - t * 0.18;
-    const rad = 0.2 - t * 0.11;
+  const segs = 22;
+  for (let s = 0; s < segs; s++) {
+    const t = s / segs;
+    const len = 0.42 - t * 0.16;
+    const rad = 0.185 - t * 0.105;
     const j = new THREE.Group();
-    j.position.y = s === 0 ? -0.12 : -len * 0.92;
+    j.position.y = s === 0 ? -0.1 : -len * 0.9;
 
     const cyl = new THREE.Mesh(
-      new THREE.CylinderGeometry(rad*0.82, rad, len, 14),
-      (s % 4 === 0) ? mLight : mMid
+      new THREE.CylinderGeometry(rad*0.78, rad, len, 16),
+      (s % 5 === 0) ? matLight : matMid
     );
     cyl.position.y = -len/2;
     j.add(cyl);
 
     if (s > 0) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(rad*1.08, 0.014, 6, 14), mCopper);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(rad*1.1, 0.012, 6, 16), matCopper);
       ring.rotation.x = Math.PI/2;
       j.add(ring);
     }
 
-    // Suckers denser
-    if (s > 0 && s < N-1) {
+    if (s > 1 && s < segs-1) {
       for (let side = -1; side <= 1; side += 2) {
-        const su = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), mSucker);
-        su.scale.set(1, 0.32, 1);
-        su.position.set(side * rad * 0.7, -len * 0.3, 0);
+        const su = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 6), matSucker);
+        su.scale.set(1, 0.28, 1);
+        su.position.set(side * rad * 0.65, -len * 0.28, 0);
         j.add(su);
       }
     }
@@ -212,44 +215,44 @@ for (let i = 0; i < 8; i++) {
     prev = j;
   }
 
-  // Initial curl
   let n = ag.children[0];
   let d = 0;
-  while (n && d < 8) {
-    if (n.rotation) n.rotation.x = 0.18 + d * 0.035;
+  while (n && d < 10) {
+    if (n.rotation) n.rotation.x = 0.22 + d * 0.032;
     n = n.children[0];
     d++;
   }
 }
 
-// Floor
+// Floor (can be toggled)
 const floor = new THREE.Mesh(
-  new THREE.CircleGeometry(14, 72),
-  new THREE.MeshStandardMaterial({ color: 0x08080c, roughness: 0.98 })
+  new THREE.CircleGeometry(16, 80),
+  new THREE.MeshStandardMaterial({ color: 0x08080e, roughness: 0.98 })
 );
 floor.rotation.x = -Math.PI/2;
-floor.position.y = -2.0;
+floor.position.y = -1.85;
 scene.add(floor);
 
 // State
 let exploded = false, irisOpen = false, domeUp = false;
-let t = 0;
+let time = 0;
 
 const btnE = document.getElementById('btnExplode');
 const btnI = document.getElementById('btnIris');
 const btnD = document.getElementById('btnDome');
 const bgInput = document.getElementById('bgColor');
+const floorChk = document.getElementById('showFloor');
 
-function syncBtns() {
+function sync() {
   btnE.classList.toggle('active', exploded);
   btnE.textContent = exploded ? 'Assemble' : 'Explode';
   btnI.classList.toggle('active', irisOpen);
   btnD.classList.toggle('active', domeUp);
 }
 
-btnE.onclick = () => { exploded = !exploded; syncBtns(); };
-btnI.onclick = () => { irisOpen = !irisOpen; syncBtns(); };
-btnD.onclick = () => { domeUp = !domeUp; syncBtns(); };
+btnE.onclick = () => { exploded = !exploded; sync(); };
+btnI.onclick = () => { irisOpen = !irisOpen; sync(); };
+btnD.onclick = () => { domeUp = !domeUp; sync(); };
 
 bgInput.oninput = (e) => {
   const c = new THREE.Color(e.target.value);
@@ -258,21 +261,25 @@ bgInput.oninput = (e) => {
   document.body.style.background = e.target.value;
 };
 
+floorChk.onchange = () => {
+  floor.visible = floorChk.checked;
+};
+
 function animate() {
   requestAnimationFrame(animate);
-  t += 0.016;
+  time += 0.016;
   controls.update();
 
-  root.rotation.y = Math.sin(t * 0.22) * 0.06;
+  root.rotation.y = Math.sin(time * 0.2) * 0.05;
 
   arms.forEach((arm, i) => {
-    const ph = t * 0.55 + i * 0.75;
+    const ph = time * 0.5 + i * 0.7;
     let node = arm.children[0];
     let d = 0;
-    while (node && d < 12) {
+    while (node && d < 14) {
       if (node.rotation) {
-        const base = exploded ? 0.02 : (0.14 + d * 0.028);
-        node.rotation.x = base + Math.sin(ph + d * 0.3) * 0.07;
+        const base = exploded ? 0.01 : (0.16 + d * 0.025);
+        node.rotation.x = base + Math.sin(ph + d * 0.28) * 0.06;
       }
       node = node.children[0];
       d++;
@@ -281,31 +288,31 @@ function animate() {
 
   arms.forEach(arm => {
     const a = arm.userData.ang;
-    const r = exploded ? 4.0 : 1.22;
-    arm.position.x = THREE.MathUtils.lerp(arm.position.x, Math.cos(a)*r, 0.045);
-    arm.position.z = THREE.MathUtils.lerp(arm.position.z, Math.sin(a)*r, 0.045);
-    arm.position.y = THREE.MathUtils.lerp(arm.position.y, exploded ? 0.6 : -0.05, 0.045);
+    const r = exploded ? 3.8 : 1.15;
+    arm.position.x = THREE.MathUtils.lerp(arm.position.x, Math.cos(a)*r, 0.04);
+    arm.position.z = THREE.MathUtils.lerp(arm.position.z, Math.sin(a)*r, 0.04);
+    arm.position.y = THREE.MathUtils.lerp(arm.position.y, exploded ? 0.5 : -0.08, 0.04);
   });
 
-  dome.position.y = THREE.MathUtils.lerp(dome.position.y, domeUp ? 3.6 : 1.72, 0.04);
-  dome.rotation.y = domeUp ? t * 0.35 : 0;
+  dome.position.y = THREE.MathUtils.lerp(dome.position.y, domeUp ? 3.4 : 1.58, 0.035);
+  dome.rotation.y = domeUp ? time * 0.3 : 0;
 
   blades.forEach(p => {
-    const o = irisOpen ? 0.38 : 0;
-    p.children[0].position.x = THREE.MathUtils.lerp(p.children[0].position.x, 0.12 + o, 0.06);
+    const o = irisOpen ? 0.34 : 0;
+    p.children[0].position.x = THREE.MathUtils.lerp(p.children[0].position.x, 0.1 + o, 0.055);
   });
 
-  coreLight.intensity = 1.8 + Math.sin(t * 2.2) * 0.5;
-  core.material.emissiveIntensity = 0.9 + Math.sin(t * 2.2) * 0.4;
+  coreLight.intensity = 2.0 + Math.sin(time * 2.0) * 0.6;
+  core.material.emissiveIntensity = 1.0 + Math.sin(time * 2.0) * 0.45;
 
   renderer.render(scene, camera);
 }
 animate();
 
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(innerWidth, innerHeight);
 });
 </script>
 </body>
