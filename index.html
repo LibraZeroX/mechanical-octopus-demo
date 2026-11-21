@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Mechanical Octopus - Teardown Demo</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #0a0a12; font-family: system-ui, sans-serif; }
+  #ui {
+    position: absolute; top: 20px; left: 20px; color: #e0e0ff; z-index: 10;
+    background: rgba(10,10,20,0.7); padding: 16px 20px; border-radius: 12px;
+    backdrop-filter: blur(8px); border: 1px solid rgba(120,140,255,0.3);
+  }
+  #ui h1 { margin: 0 0 8px 0; font-size: 18px; }
+  #ui p { margin: 4px 0; font-size: 13px; opacity: 0.8; }
+  button {
+    background: #3a4aff; color: white; border: none; padding: 8px 16px;
+    border-radius: 6px; margin: 8px 6px 0 0; cursor: pointer; font-weight: 600;
+  }
+  button:hover { background: #5a6aff; }
+  button.active { background: #ff4a6a; }
+  #info { font-size: 12px; margin-top: 10px; color: #aaa; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="ui">
+  <h1>Mechanical Octopus</h1>
+  <p>Three.js procedural teardown demo</p>
+  <button id="btnExplode">Explode / Assemble</button>
+  <button id="btnIris">Open Iris</button>
+  <button id="btnDome">Lift Dome</button>
+  <div id="info">Drag to rotate • Scroll to zoom • Right-drag to pan</div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a12);
+scene.fog = new THREE.FogExp2(0x0a0a12, 0.012);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(12, 8, 18);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.5, 0);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x404060, 0.6));
+const key = new THREE.DirectionalLight(0xffffff, 1.8);
+key.position.set(8, 15, 10);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x6688ff, 0.6);
+fill.position.set(-10, 5, -5);
+scene.add(fill);
+const rim = new THREE.PointLight(0xffaa66, 1.5, 30);
+rim.position.set(0, 2, -8);
+scene.add(rim);
+
+// Materials
+const metal = new THREE.MeshStandardMaterial({
+  color: 0x888899, metalness: 0.85, roughness: 0.28
+});
+const darkMetal = new THREE.MeshStandardMaterial({
+  color: 0x333344, metalness: 0.9, roughness: 0.35
+});
+const copper = new THREE.MeshStandardMaterial({
+  color: 0xcc7744, metalness: 0.8, roughness: 0.3
+});
+const glass = new THREE.MeshPhysicalMaterial({
+  color: 0xaaddff, metalness: 0.1, roughness: 0.05,
+  transmission: 0.85, thickness: 0.4, transparent: true, opacity: 0.7
+});
+const irisMat = new THREE.MeshStandardMaterial({
+  color: 0x222233, metalness: 0.7, roughness: 0.4
+});
+const suckerMat = new THREE.MeshStandardMaterial({
+  color: 0xdd5566, metalness: 0.2, roughness: 0.6
+});
+
+// Root group for explode
+const root = new THREE.Group();
+scene.add(root);
+
+// --- Body / Mantle ---
+const body = new THREE.Group();
+root.add(body);
+
+const mantle = new THREE.Mesh(new THREE.SphereGeometry(2.2, 32, 24, 0, Math.PI*2, 0, Math.PI*0.7), metal);
+mantle.position.y = 1.2;
+mantle.scale.set(1, 1.15, 1);
+body.add(mantle);
+
+// Glass dome
+const dome = new THREE.Mesh(new THREE.SphereGeometry(2.35, 32, 20, 0, Math.PI*2, 0, Math.PI*0.45), glass);
+dome.position.y = 2.8;
+body.add(dome);
+dome.userData.baseY = 2.8;
+
+// Hub under arms
+const hub = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.0, 0.6, 48), darkMetal);
+hub.position.y = -0.2;
+body.add(hub);
+
+// Gear teeth visual on hub
+for (let i = 0; i < 48; i++) {
+  const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.15), copper);
+  const a = (i / 48) * Math.PI * 2;
+  tooth.position.set(Math.cos(a) * 1.95, -0.2, Math.sin(a) * 1.95);
+  tooth.rotation.y = -a;
+  body.add(tooth);
+}
+
+// --- Mechanical Eye / Iris ---
+const eyeGroup = new THREE.Group();
+eyeGroup.position.set(0, 2.6, 1.8);
+body.add(eyeGroup);
+
+const eyeRing = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.08, 8, 24), metal);
+eyeGroup.add(eyeRing);
+
+const irisBlades = [];
+for (let i = 0; i < 10; i++) {
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.06, 0.04), irisMat);
+  blade.position.x = 0.18;
+  blade.rotation.z = (i / 10) * Math.PI * 2;
+  const pivot = new THREE.Group();
+  pivot.add(blade);
+  pivot.rotation.z = (i / 10) * Math.PI * 2;
+  eyeGroup.add(pivot);
+  irisBlades.push(pivot);
+}
+
+// Lens behind
+const lens = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 16), new THREE.MeshPhysicalMaterial({
+  color: 0x88ccff, metalness: 0.3, roughness: 0.1, transmission: 0.6
+}));
+lens.position.z = -0.15;
+eyeGroup.add(lens);
+
+// --- 8 Arms ---
+const arms = [];
+const armCount = 8;
+for (let a = 0; a < armCount; a++) {
+  const armGroup = new THREE.Group();
+  const angle = (a / armCount) * Math.PI * 2;
+  armGroup.position.set(Math.cos(angle) * 1.6, 0.1, Math.sin(angle) * 1.6);
+  armGroup.rotation.y = -angle + Math.PI/2;
+  armGroup.userData.baseAngle = angle;
+  root.add(armGroup);
+  arms.push(armGroup);
+
+  let prev = armGroup;
+  const segments = 12;
+  for (let s = 0; s < segments; s++) {
+    const len = 1.4 - s * 0.08;
+    const rad = 0.28 - s * 0.018;
+    const seg = new THREE.Mesh(new THREE.CylinderGeometry(rad*0.85, rad, len, 10), metal);
+    seg.position.y = -len / 2 - 0.05;
+    const joint = new THREE.Group();
+    joint.position.y = s === 0 ? -0.3 : -len;
+    joint.add(seg);
+    prev.add(joint);
+    prev = joint;
+
+    // Suckers
+    if (s % 2 === 0 && s < 9) {
+      for (let side = -1; side <= 1; side += 2) {
+        const sucker = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), suckerMat);
+        sucker.scale.set(1, 0.4, 1);
+        sucker.position.set(side * rad * 0.7, -len * 0.4, 0);
+        joint.add(sucker);
+      }
+    }
+  }
+}
+
+// Floor
+const floor = new THREE.Mesh(
+  new THREE.CircleGeometry(18, 48),
+  new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -2.5;
+scene.add(floor);
+
+// State
+let exploded = false;
+let irisOpen = false;
+let domeLifted = false;
+let time = 0;
+
+function setExplode(on) {
+  exploded = on;
+  document.getElementById('btnExplode').classList.toggle('active', on);
+  document.getElementById('btnExplode').textContent = on ? 'Assemble' : 'Explode';
+}
+
+document.getElementById('btnExplode').onclick = () => setExplode(!exploded);
+document.getElementById('btnIris').onclick = () => {
+  irisOpen = !irisOpen;
+  document.getElementById('btnIris').classList.toggle('active', irisOpen);
+};
+document.getElementById('btnDome').onclick = () => {
+  domeLifted = !domeLifted;
+  document.getElementById('btnDome').classList.toggle('active', domeLifted);
+};
+
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.016;
+  controls.update();
+
+  // Gentle idle motion
+  root.rotation.y = Math.sin(time * 0.3) * 0.15;
+
+  // Arms subtle wave
+  arms.forEach((arm, i) => {
+    const phase = time * 0.8 + i * 0.7;
+    arm.rotation.x = Math.sin(phase) * 0.12;
+    // Segment wave
+    let node = arm.children[0];
+    let d = 1;
+    while (node && d < 8) {
+      if (node.rotation) node.rotation.x = Math.sin(phase + d * 0.4) * 0.18;
+      node = node.children[0];
+      d++;
+    }
+  });
+
+  // Explode
+  const explodeT = exploded ? 1 : 0;
+  arms.forEach((arm, i) => {
+    const dir = new THREE.Vector3(Math.cos(arm.userData.baseAngle), 0.2, Math.sin(arm.userData.baseAngle)).normalize();
+    const target = dir.multiplyScalar(exploded ? 4.5 : 0);
+    arm.position.x = THREE.MathUtils.lerp(arm.position.x, Math.cos(arm.userData.baseAngle)*1.6 + target.x, 0.06);
+    arm.position.z = THREE.MathUtils.lerp(arm.position.z, Math.sin(arm.userData.baseAngle)*1.6 + target.z, 0.06);
+    arm.position.y = THREE.MathUtils.lerp(arm.position.y, 0.1 + (exploded ? 1.2 : 0), 0.06);
+  });
+
+  // Dome lift
+  const domeY = domeLifted ? 5.2 : 2.8;
+  dome.position.y = THREE.MathUtils.lerp(dome.position.y, domeY, 0.05);
+  dome.rotation.y = domeLifted ? time * 0.6 : 0;
+
+  // Iris
+  irisBlades.forEach((pivot, i) => {
+    const open = irisOpen ? 0.55 : 0.0;
+    pivot.children[0].position.x = THREE.MathUtils.lerp(pivot.children[0].position.x, 0.18 + open, 0.08);
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
